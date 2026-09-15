@@ -29,6 +29,9 @@ export const init = async () => {
     await headLoaded(none)
   })
 
+  const { initUserscriptsPage } = await import('./userscripts-page')
+  initUserscriptsPage()
+
   await promiseLoadTrace('compatibility patch', async () => {
     // 兼容性补丁
     const { compatibilityPatch } = await import('./compatibility')

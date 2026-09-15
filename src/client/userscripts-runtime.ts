@@ -50,15 +50,15 @@ export const initUserscriptsRuntime = async () => {
     console.error('[Bilibili Evolved Userscripts] Failed to save settings:', error)
   })
   // This is the isolated content world's Window, NOT access to page JavaScript.
-  // DOM APIs are shared; page globals such as player/cid remain unavailable.
+  // Selected player APIs are installed separately after <head> is ready.
   // Do not bridge privileged GM APIs into the untrusted page world.
   Object.assign(window, {
     unsafeWindow: window,
     GM_getValue: storage.getValue,
     GM_setValue: storage.setValue,
     GM_deleteValue: storage.deleteValue,
+    GM_info,
+    GM_xmlhttpRequest,
   })
-  console.warn(
-    '[Bilibili Evolved Userscripts] Experimental content-world mode: page JavaScript globals are unavailable.',
-  )
+  console.info('[Bilibili Evolved Userscripts] Content-world GM APIs initialized.')
 }
