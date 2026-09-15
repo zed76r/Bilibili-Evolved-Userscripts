@@ -15,13 +15,26 @@
 
 ## 安装
 
-目前仅提供源码和本地开发构建，**没有发布可自动更新的安装链接**。
+### GitHub Releases 预览版
 
-1. 切换到本仓库 `main` 分支，按 [构建说明](./USERSCRIPTS.md#本地构建与验证) 生成 `dist/bilibili-evolved.dev.user.js`。
-2. 在 Userscripts 中安装生成的完整脚本，并停用同页的上游版本。
-3. 打开一次 Userscripts 弹窗，再刷新 B 站；从页面侧边设置入口添加需要的组件。
+发布后固定使用以下地址：
 
-脚本名称带有 `Userscripts` 标识，已移除指向上游的本体自动更新地址，避免被未适配版本覆盖。详细限制和验证记录见 [USERSCRIPTS.md](./USERSCRIPTS.md)。
+- [安装脚本](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.user.js)：`bilibili-evolved.user.js`
+- [更新 metadata](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.meta.js)：`bilibili-evolved.meta.js`
+
+`main` 的发布工作流成功后，上述固定链接指向最新制品；历史版本可在 [Releases](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases) 中下载。
+
+Userscripts 可以通过 metadata 检查更新，但不承诺管理器后台自动更新；Safari/Userscripts 的兼容范围和已验证、未验证项目见 [USERSCRIPTS.md](./USERSCRIPTS.md)。
+
+链接启用后，首次安装或从旧版本迁移时：
+
+1. 新安装直接使用上面的 `.user.js` 地址，并停用同页的上游版本。
+2. 如果本机已有 `Bilibili Evolved.user.js`，先备份原文件；再用发布脚本内容替换原文件，保留文件名 `Bilibili Evolved.user.js`。
+3. 在 Userscripts 弹窗中重新读取替换后的文件，然后刷新 B 站页面。
+4. 旧版本没有更新地址时，需要手动完成这一次迁移；迁移后 Userscripts 才能使用 `bilibili-evolved.meta.js` 检查更新。
+5. 从页面侧边设置入口添加需要的组件。
+
+脚本已移除指向上游的本体自动更新地址，避免被未适配版本覆盖。详细限制和验证记录见 [USERSCRIPTS.md](./USERSCRIPTS.md)。
 
 ---
 
