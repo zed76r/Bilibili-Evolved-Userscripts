@@ -1,3 +1,30 @@
+# Bilibili Evolved · Userscripts
+
+基于 [the1812/Bilibili-Evolved](https://github.com/the1812/Bilibili-Evolved) 的个人 fork，尝试让脚本在 **macOS Safari + [Userscripts](https://github.com/quoid/userscripts)** 中运行。适配源码位于 `main` 分支，目前属于实验性、部分兼容。
+
+## 适配内容与当前状态
+
+- 修复启动时 lodash 全局属性不可重新配置的问题。
+- 将 Userscripts 的异步存储适配到现有配置接口；缺少油猴菜单 API 时保留页面内设置入口。
+- 修复 Safari 下组件沙箱调用 `btoa` / `atob` 的接收者错误。
+- 已在 B 站桌面首页验证：设置面板打开、配置刷新后保留、在线组件安装，以及“隐藏顶部横幅”样式生效。
+
+**兼容限制：** Userscripts 的隔离环境不能直接访问 B 站页面内部的 `player`、`cid` 等 JavaScript 对象，因此依赖它们的播放器增强、下载等组件不在当前支持范围内。尚未验证 iOS Safari，也不保证所有组件可用。
+
+## 安装
+
+目前仅提供源码和本地开发构建，**没有发布可自动更新的安装链接**。
+
+1. 切换到本仓库 `main` 分支，按 [构建说明](./USERSCRIPTS.md#本地构建与验证) 生成 `dist/bilibili-evolved.dev.user.js`。
+2. 在 Userscripts 中安装生成的完整脚本，并停用同页的上游版本。
+3. 打开一次 Userscripts 弹窗，再刷新 B 站；从页面侧边设置入口添加需要的组件。
+
+脚本名称带有 `Userscripts` 标识，已移除指向上游的本体自动更新地址，避免被未适配版本覆盖。详细限制和验证记录见 [USERSCRIPTS.md](./USERSCRIPTS.md)。
+
+---
+
+以下保留上游项目说明；其中的安装链接和兼容性声明属于上游版本。
+
 <!-- spell-checker: disable -->
 
 <div align="center"><img id="Bilibili-Evolved" width="500" alt="Bilibili Evolved" src="./images/bilibili-evolved-wide-color.svg"></div>
@@ -27,7 +54,10 @@
 
 [❤ 捐助](doc/donate.md)
 
-# 安装
+# 上游安装方式
+
+> 以下链接安装的是上游版本，**不包含本 fork 的 Userscripts 适配**。
+
 需要浏览器装有 [Tampermonkey](https://tampermonkey.net/) 或 [Violentmonkey](https://violentmonkey.github.io/) 插件, 下方表格中挑一个链接安装.
 
 **注意事项**
