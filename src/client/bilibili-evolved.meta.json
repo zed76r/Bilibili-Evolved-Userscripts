@@ -1,6 +1,4 @@
 {
-  "name": "Bilibili Evolved",
-  "description": "强大的哔哩哔哩增强脚本",
-  "updateURL": "[altCdn.stableClient]",
-  "downloadURL": "[altCdn.stableClient]"
+  "name": "Bilibili Evolved (Userscripts)",
+  "description": "实验性 Safari Userscripts 适配；页面内部对象相关功能尚不支持。"
 }
