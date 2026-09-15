@@ -15,9 +15,9 @@
 ## 兼容边界
 
 `unsafeWindow` 在此适配中仅指向 **Userscripts 的 content-world window**。
-它能够访问共享 DOM 和浏览器 DOM API，不能读取 B 站页面 JavaScript 中的
-`player`、`aid`、`cid`、`UserStatus`、`__INITIAL_STATE__` 等对象，也不能替换页面世界的
-`fetch` 或播放器函数。依赖这些对象的组件不在支持范围内，请勿据此判断播放器增强、下载等功能可用。
+它能够访问共享 DOM 和浏览器 DOM API，并通过下述白名单通道读取公共视频 ID、调用有限的播放器方法。
+它不等于页面真实 window，不能读取任意页面对象（如 `UserStatus`、`__INITIAL_STATE__`），
+也不能替换页面世界的 `fetch` 或播放器函数。完整组件兼容性需单独验证。
 
 本 fork 不把特权 GM API 桥接给网页，不添加扩展菜单假实现，不关闭 Safari 安全保护。
 配置写入是异步的；写入失败会在控制台报告。多个标签页没有实时配置同步，修改后应刷新其他标签页。
@@ -61,9 +61,35 @@ pnpm tsx dev-tools/dev-server/command.ts shutdown
 
 Userscripts 中 `playerReady()` 使用 BPX 容器内的控件与媒体 DOM 判断挂载完成，
 不再等待 content world 无法访问的 `UserStatus` / `onLoginInfoLoaded`。
-这只解决 DOM 增强的启动等待，不提供页面播放器 API 或登录状态。
+这一步只解决 DOM 增强的启动等待；后续白名单播放器 API 适配见下节，仍不提供登录状态。
 其他脚本管理器保持原有回调路径，嵌入播放器仍不初始化这些增强。
 
 本机 Safari 桌面视频页已验证：视频正常播放，超过原轮询超时后没有再出现
 `utils.playerReady 失败`。新增测试覆盖 DOM 就绪、未就绪、bwp-video 选择器、
 Tampermonkey 回调与嵌入播放器分支；与原测试合计 11 项通过。
+
+
+### 核心 API 统一适配
+
+适配分为两层：`userscripts-runtime.ts` 保留隔离环境中的设置缓存及既有 GM 网络接口；
+`userscripts-page.ts` 在页面环境安装固定的播放器端点，隔离脚本通过脱离文档的 DOM 节点同步通信。
+通道不提供 GM 权限、任意代码执行或任意全局属性读取，也不绕过页面 CSP。
+
+| API | 当前范围 |
+| --- | --- |
+| `GM_getValue/setValue/deleteValue` | 启动前预载、同步缓存、有序异步写入 |
+| `GM_info` / `GM_xmlhttpRequest` | 将已经授权给核心和组件的接口补齐为隔离环境全局别名 |
+| `aid/cid/bvid` | 实时读取公共 ID，统一字符串；过滤临时数组值 |
+| `hasVideo` / `videoChange` | 复用现有核心逻辑，支持首次识别与切集通知 |
+| `player` / `playerRaw` | 白名单：时间、音量、静音读取、跳转、播放/暂停、关灯、倍速；仅代理页面实际存在的方法 |
+| `on/once/off` | 播放/暂停事件；支持移除和播放器实例更换后的迁移 |
+| Window 方法 | 沙箱统一绑定原始 Window 接收者，保留构造函数语义 |
+| GM 菜单 | 管理器不提供时仍使用页面内设置入口 |
+
+本机 Safari + Userscripts 验证：公共 ID、`hasVideo`、时间读取、原位 seek、跨域读取公开 JSON、
+播放/暂停事件，以及合集自动切换后的 `videoChange` 与 ID 更新均成功。
+单元/隔离环境集成测试覆盖通道白名单、同步返回、事件解绑/迁移、CSP 拒绝和未初始化状态。
+
+这不是完整的 `unsafeWindow` 实现：`__INITIAL_STATE__`、评论/React 私有对象、页面
+`fetch/history` hook、登录回调与原始播放器日志不通过此通道暴露。关灯/音量/倍速方法虽已提供，
+尚未逐项进行 Safari 操作验收；完整下载流程、番剧、直播、iOS 及第三方组件兼容仍需单独验证。
