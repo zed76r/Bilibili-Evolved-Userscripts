@@ -22,6 +22,53 @@
 本 fork 不把特权 GM API 桥接给网页，不添加扩展菜单假实现，不关闭 Safari 安全保护。
 配置写入是异步的；写入失败会在控制台报告。多个标签页没有实时配置同步，修改后应刷新其他标签页。
 
+## GitHub Releases 发布
+
+发布工作流位于 `.github/workflows/userscripts-release.yml`，在推送到 `main` 时自动触发，也可以在
+**Actions → Publish Userscripts → Run workflow** 中选择 `main` 手动触发。发布前需要依次通过类型检查、lint、
+Userscripts 测试、production Userscripts 构建和 release gate；任一步骤失败都不会部署。
+
+验证构建通过后，工作流以通过验证的源码 SHA 创建唯一的 `userscripts-<UTC version>` tag，先创建 draft
+Release 并上传以下两个资产，再发布为非 prerelease 并标记为 latest：
+
+- `bilibili-evolved.user.js`
+- `bilibili-evolved.meta.js`
+
+历史 Release 保留，用于需要时手动回退到旧版本。
+
+门禁命令为：
+
+```sh
+pnpm run type
+pnpm run lint-check
+node --import tsx --test dev-tools/userscripts/*.test.mjs
+pnpm run build-userscripts
+node dev-tools/userscripts/check-release.mjs
+```
+
+`pnpm run build-userscripts` 执行 production Userscripts 构建，生成制品到 `dev-tools/userscripts/dist/`：
+
+- `bilibili-evolved.user.js`：完整安装脚本
+- `bilibili-evolved.meta.js`：更新 metadata
+
+发布后固定使用以下地址：
+
+- `https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.user.js`
+- `https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.meta.js`
+
+metadata 的 `name` 为 `Bilibili Evolved (Userscripts Preview)`，与当前安装保持一致。发布脚本的 `@version`
+采用 UTC 构建时间，格式为 `YYYYMMDD.HHMMSS`；内部核心兼容版本仍以上游版本为准。Userscripts 支持通过 metadata
+检查更新，但不能承诺管理器后台自动更新。
+
+上述固定链接随成功发布更新；以 GitHub Actions 运行结果和 Release 附件为准。发布成功不等于所有 Safari 功能已经实测。
+
+链接启用后，首次安装或迁移时按以下步骤操作：
+
+1. 新安装直接使用 `.user.js` 地址，并停用同页的上游版本。
+2. 如果本机已有 `Bilibili Evolved.user.js`，先备份原文件，再用发布脚本内容替换它，保留文件名 `Bilibili Evolved.user.js`。
+3. 在 Userscripts 弹窗中重新读取替换后的文件，然后刷新 B 站页面。
+4. 旧版本没有更新地址时，需要手动完成这一次迁移；迁移后 Userscripts 才能使用 `.meta.js` 地址检查更新。
+
 ## 本地构建与验证
 
 ```sh
@@ -29,11 +76,20 @@ pnpm install --frozen-lockfile
 pnpm run type
 pnpm run lint-check
 node --import tsx --test dev-tools/userscripts/*.test.mjs
+pnpm run build-userscripts
+node dev-tools/userscripts/check-release.mjs
+```
+
+`pnpm run build-userscripts` 的输出位于 `dev-tools/userscripts/dist/`。在 Userscripts 中安装其中的
+`bilibili-evolved.user.js` 完整文件，并停用同一页面上的上游版本，避免两个实例互相干扰。
+
+如需交互式开发调试，再启动开发服务：
+
+```sh
 pnpm tsx dev-tools/dev-server/index.ts
 ```
 
-开发服务生成 `dist/bilibili-evolved.dev.user.js`。在 Userscripts 中安装此完整文件，
-并停用同一页面上的上游版本，避免两个实例互相干扰。修改文件后打开一次 Userscripts 弹窗，再刷新 B 站。
+开发服务生成 `dist/bilibili-evolved.dev.user.js`。修改文件后打开一次 Userscripts 弹窗，再刷新 B 站。
 开发构建不会随源文件更改自动更新到已安装脚本，需重新安装构建产物。
 
 完成后关闭开发服务：
@@ -43,7 +99,7 @@ pnpm tsx dev-tools/dev-server/command.ts shutdown
 ```
 
 适配修改仅提交源码。`master` 基线继承的 `dist/` 和 `registry/dist/` 是上游发布产物，
-不包含本 fork 适配；请按上述步骤生成并安装本地开发构建。当前没有 fork 自动更新发布源。
+不包含本 fork 适配；请按上述步骤生成并安装本地构建。GitHub Releases 发布源由 `main` 工作流维护。
 
 ## 本次验证（2026-09-15）
 
@@ -101,4 +157,4 @@ Tampermonkey 回调与嵌入播放器分支；与原测试合计 11 项通过。
 3 个适配提交已重放到上游 `master` 的 `9535fa6`，不继续携带 `preview-fixes` 的开发分支差异。
 类型检查、lint 与 18 项回归测试通过；Safari 在三小时纯音乐视频页实测通过
 视频 ID、`hasVideo`、时间/音量读取、原位跳转、播放/暂停事件、跨域公开 JSON 请求和设置面板打开。
-测试探针已移除，本机安装开发构建；未发布新的自动更新产物。
+测试探针已移除，本机安装开发构建；该次迁移验证未发布自动更新产物。
