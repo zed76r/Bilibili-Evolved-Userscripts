@@ -1,0 +1,94 @@
+name: Publish Userscripts
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: userscripts-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'zed76r/Bilibili-Evolved-Userscripts' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run type
+      - run: pnpm run lint-check
+      - run: node --import tsx --test dev-tools/userscripts/*.test.mjs
+      - run: pnpm run build-userscripts
+      - run: node dev-tools/userscripts/check-release.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: userscripts-release
+          path: dev-tools/userscripts/dist
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: userscripts-release
+          path: release
+      - name: Publish verified assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          test "$current_sha" = "$GITHUB_SHA"
+          version=$(awk '$2 == "@version" {print $3}' release/bilibili-evolved.meta.js)
+          [[ "$version" =~ ^[0-9]{8}\.[0-9]{6}$ ]]
+          tag="userscripts-$version"
+          if gh release view "$tag" --json isDraft,targetCommitish > release-state.json; then
+            jq -e --arg sha "$GITHUB_SHA" '.targetCommitish == $sha' release-state.json
+            # A retry must never replace assets of a published release.
+            if jq -e '.isDraft == false' release-state.json; then
+              exit 0
+            fi
+          else
+            cat > release-notes.md <<EOF
+          Experimental Safari Userscripts build.
+
+          Source: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Validation: type check, lint, Userscripts regression tests and production artifact checks.
+          See USERSCRIPTS.md for compatibility and migration instructions.
+          EOF
+            gh release create "$tag" --target "$GITHUB_SHA" --draft \
+              --title "Userscripts $version" --notes-file release-notes.md
+          fi
+          gh release upload "$tag" release/bilibili-evolved.user.js release/bilibili-evolved.meta.js --clobber
+          gh release view "$tag" --json assets --jq '[.assets[].name] | sort' > release-assets.json
+          jq -e '. == ["bilibili-evolved.meta.js", "bilibili-evolved.user.js"]' release-assets.json
+          # Recheck after upload before making this version public and updating latest.
+          current_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          test "$current_sha" = "$GITHUB_SHA"
+          # An old draft retry must not downgrade the update feed, even for the same SHA.
+          newest_tag=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \
+            --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name | select(test("^userscripts-[0-9]{8}\\.[0-9]{6}$"))' \
+            | LC_ALL=C sort | tail -n 1)
+          if [[ -n "$newest_tag" && ! "$tag" > "$newest_tag" ]]; then
+            echo "Refusing to publish a version older than the existing release."
+            exit 1
+          fi
+          gh release edit "$tag" --draft=false --prerelease=false --latest
