@@ -40,5 +40,5 @@ const playerModePolyfill = async () => {
 
 /** 番剧 & 视频播放器 (BPX) 通用 polyfill */
 export const bpxPlayerPolyfill = lodash.once(async () => {
-  playerModePolyfill()
+  await playerModePolyfill()
 })

@@ -467,6 +467,7 @@ export class DoubleClickEvent {
   }
 }
 /** 等待播放器准备好, 如果过早注入 DOM 元素可能会导致爆炸
+ * Userscripts 下仅保证 BPX 控件和媒体 DOM 已挂载，不保证页面内部 API 或登录状态可用。
  *
  * https://github.com/the1812/Bilibili-Evolved/issues/1076
  * https://github.com/the1812/Bilibili-Evolved/issues/770
@@ -474,23 +475,40 @@ export class DoubleClickEvent {
 export const playerReady = async () => {
   const { sq } = await import('../spin-query')
   const { logError } = await import('./log')
+  const isJudgementVideo =
+    document.URL.replace(window.location.search, '') ===
+      'https://www.bilibili.com/blackboard/newplayer.html' && document.URL.includes('fjw=true')
+  if (isJudgementVideo || isEmbeddedPlayer()) {
+    // These embedded pages intentionally never resolve (see #2340).
+    return new Promise<void>(() => {
+      // Do not initialize enhancements in embedded players.
+    })
+  }
+  if (GM_info.scriptHandler === 'Userscripts') {
+    // The content world shares DOM, but cannot read UserStatus/onLoginInfoLoaded.
+    // This only signals that it is safe to attach DOM-based player enhancements.
+    const player = await sq(
+      () => document.querySelector('.bpx-player-container'),
+      container =>
+        Boolean(
+          container?.querySelector('.bpx-player-control-wrap') &&
+            container.querySelector(
+              '.bpx-player-video-wrap video, .bpx-player-video-wrap bwp-video, .bpx-player-video-area video, .bpx-player-video-area bwp-video',
+            ),
+        ),
+    )
+    if (!player) {
+      const error = new Error('utils.playerReady: Userscripts 播放器 DOM 未就绪')
+      logError(error)
+      throw error
+    }
+    return Promise.resolve()
+  }
   await sq(
     () => unsafeWindow,
     () => unsafeWindow.UserStatus !== undefined,
   )
   return new Promise<void>((resolve, reject) => {
-    const isJudgementVideo =
-      document.URL.replace(window.location.search, '') ===
-        'https://www.bilibili.com/blackboard/newplayer.html' && document.URL.includes('fjw=true')
-    if (isJudgementVideo) {
-      /* 如果是风纪委员里的内嵌视频, 永远不 resolve
-        https://github.com/the1812/Bilibili-Evolved/issues/2340
-      */
-      return
-    }
-    if (isEmbeddedPlayer()) {
-      return
-    }
     if (unsafeWindow.onLoginInfoLoaded) {
       unsafeWindow.onLoginInfoLoaded(resolve)
     } else {
