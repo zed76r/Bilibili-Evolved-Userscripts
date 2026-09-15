@@ -98,8 +98,9 @@ When a change affects page behavior, also check the browser console for new runt
 
 ## Branches And Commits
 
-- Use `preview-features` as the base for new features.
-- Use `preview-fixes` as the base for bug fixes.
+- This Userscripts fork develops from `main` and tracks only upstream `master`.
+- Replay fork-specific changes onto upstream `master` when updating the baseline; do not import upstream development branches.
+- Preserve linear history: use fast-forward locally and rebase merging on GitHub.
 - Commit messages only need to clearly describe the change; the repository does not require a strict conventional commit format.
 - If you credit AI assistance, use the component's `author` metadata as described in `CONTRIBUTING.md`. Keep Git authorship and commit messages focused on the human contributors and the changes they made.
 - Do not create release tags, push release branches, or perform release steps unless the task is explicitly about releasing.
