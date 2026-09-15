@@ -100,6 +100,26 @@ test('feature sandbox calls base64 DOM functions with the Window receiver', asyn
     assert.equal(this, window, 'Window.atob requires the real Window receiver')
     return Buffer.from(value, 'base64').toString()
   }
+  window.getComputedStyle = function () {
+    assert.equal(this, window, 'DOM helpers require the real Window receiver')
+    return { color: 'blue' }
+  }
   const { loadFeatureCode } = await import('../../src/core/external-input/load-feature-code.ts')
   assert.deepEqual(loadFeatureCode('({ value: atob(btoa("style")) })'), { value: 'style' })
+  assert.equal(loadFeatureCode('getComputedStyle({}).color'), 'blue')
+})
+
+
+test('publishes granted network API to the component sandbox in Userscripts', async () => {
+  globalThis.GM_info = { scriptHandler: 'Userscripts' }
+  globalThis.GM = {
+    listValues: async () => [],
+    getValue: async () => undefined,
+  }
+  const request = () => ({ abort() {} })
+  globalThis.GM_xmlhttpRequest = request
+  globalThis.window = {}
+  const { initUserscriptsRuntime } = await import('../../src/client/userscripts-runtime.ts')
+  await initUserscriptsRuntime()
+  assert.equal(window.GM_xmlhttpRequest, request)
 })

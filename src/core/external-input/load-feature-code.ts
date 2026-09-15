@@ -28,10 +28,34 @@ const createCodeSandbox = (): CodeSandbox => {
     // 加固，防止逃逸
     [Symbol.unscopables, undefined],
     ['unsafeWindow', unsafeWindow],
-    // WebKit rejects the sandbox Proxy as the receiver of these Window APIs.
-    ['btoa', window.btoa.bind(window)],
-    ['atob', window.atob.bind(window)],
   ] as [keyof any, unknown][])
+  // Only Window methods require rebinding; constructors and component functions do not.
+  const windowMethods = [
+    'btoa',
+    'atob',
+    'fetch',
+    'getComputedStyle',
+    'matchMedia',
+    'requestAnimationFrame',
+    'cancelAnimationFrame',
+    'requestIdleCallback',
+    'cancelIdleCallback',
+    'setTimeout',
+    'clearTimeout',
+    'setInterval',
+    'clearInterval',
+    'queueMicrotask',
+    'addEventListener',
+    'removeEventListener',
+    'dispatchEvent',
+    'scrollTo',
+    'scrollBy',
+  ]
+  windowMethods.forEach(name => {
+    if (typeof window[name] === 'function') {
+      injection.set(name, window[name].bind(window))
+    }
+  })
   // 目标代码执行时的全局对象代理
   const sandbox = new Proxy(Object.create(null), {
     has: () => true,
