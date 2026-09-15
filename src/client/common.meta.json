@@ -32,7 +32,11 @@
     "GM_info",
     "GM_xmlhttpRequest",
     "GM_registerMenuCommand",
-    "GM_unregisterMenuCommand"
+    "GM_unregisterMenuCommand",
+    "GM.getValue",
+    "GM.setValue",
+    "GM.deleteValue",
+    "GM.listValues"
   ],
   "connect": [
     "raw.githubusercontent.com",
@@ -45,9 +49,7 @@
     "localhost",
     "*"
   ],
-  "require": [
-    "[altCdn.library.lodash.url]#sha256=[altCdn.library.lodash.sha256]"
-  ],
+  "require": ["[altCdn.library.lodash.url]#sha256=[altCdn.library.lodash.sha256]"],
   "icon": "[altCdn.smallLogo]",
   "icon64": "[altCdn.logo]"
 }
