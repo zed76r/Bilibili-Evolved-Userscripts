@@ -1,7 +1,7 @@
 # Safari Userscripts 适配（实验性）
 
-本 fork 针对 **Safari + Userscripts** 的隔离内容环境，基于上游
-`preview-fixes`，不代表上游承诺支持 Safari，也不提供完整 Tampermonkey 兼容层。
+本 fork 针对 **Safari + Userscripts** 的隔离内容环境，基于
+上游 `master`（本次基线 `9535fa6`），不代表上游承诺支持 Safari，也不提供完整 Tampermonkey 兼容层。
 
 ## 已处理
 
@@ -42,7 +42,8 @@ pnpm tsx dev-tools/dev-server/index.ts
 pnpm tsx dev-tools/dev-server/command.ts shutdown
 ```
 
-普通修复分支仅保留源码，构建产物不提交。当前没有 fork 自动更新发布源。
+适配修改仅提交源码。`master` 基线继承的 `dist/` 和 `registry/dist/` 是上游发布产物，
+不包含本 fork 适配；请按上述步骤生成并安装本地开发构建。当前没有 fork 自动更新发布源。
 
 ## 本次验证（2026-09-15）
 
@@ -93,3 +94,11 @@ Tampermonkey 回调与嵌入播放器分支；与原测试合计 11 项通过。
 这不是完整的 `unsafeWindow` 实现：`__INITIAL_STATE__`、评论/React 私有对象、页面
 `fetch/history` hook、登录回调与原始播放器日志不通过此通道暴露。关灯/音量/倍速方法虽已提供，
 尚未逐项进行 Safari 操作验收；完整下载流程、番剧、直播、iOS 及第三方组件兼容仍需单独验证。
+
+
+### master 基线迁移验证（2026-09-15）
+
+3 个适配提交已重放到上游 `master` 的 `9535fa6`，不继续携带 `preview-fixes` 的开发分支差异。
+类型检查、lint 与 18 项回归测试通过；Safari 在三小时纯音乐视频页实测通过
+视频 ID、`hasVideo`、时间/音量读取、原位跳转、播放/暂停事件、跨域公开 JSON 请求和设置面板打开。
+测试探针已移除，本机安装开发构建；未发布新的自动更新产物。

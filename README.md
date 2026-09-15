@@ -1,6 +1,6 @@
 # Bilibili Evolved · Userscripts
 
-基于 [the1812/Bilibili-Evolved](https://github.com/the1812/Bilibili-Evolved) 的个人 fork，尝试让脚本在 **macOS Safari + [Userscripts](https://github.com/quoid/userscripts)** 中运行。适配源码位于 `main` 分支，目前属于实验性、部分兼容。
+基于 [the1812/Bilibili-Evolved](https://github.com/the1812/Bilibili-Evolved) 的个人 fork，尝试让脚本在 **macOS Safari + [Userscripts](https://github.com/quoid/userscripts)** 中运行。适配源码位于 `main` 分支，基于上游 `master` 持续适配，目前属于实验性、部分兼容。
 
 ## 适配内容与当前状态
 
