@@ -28,6 +28,9 @@ const createCodeSandbox = (): CodeSandbox => {
     // 加固，防止逃逸
     [Symbol.unscopables, undefined],
     ['unsafeWindow', unsafeWindow],
+    // WebKit rejects the sandbox Proxy as the receiver of these Window APIs.
+    ['btoa', window.btoa.bind(window)],
+    ['atob', window.atob.bind(window)],
   ] as [keyof any, unknown][])
   // 目标代码执行时的全局对象代理
   const sandbox = new Proxy(Object.create(null), {

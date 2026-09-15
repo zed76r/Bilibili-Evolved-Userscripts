@@ -76,16 +76,18 @@ const loadPanel = (popup?: InstanceType<typeof VPopup>) => {
 }
 
 onMounted(() => {
-  GM_registerMenuCommand('功能', () => {
-    loadPanel(widgetsPanelPopup.value)
-    widgetsOpened.value = true
-    settingsOpened.value = false
-  })
-  GM_registerMenuCommand('设置', () => {
-    loadPanel(settingsPanelPopup.value)
-    widgetsOpened.value = false
-    settingsOpened.value = true
-  })
+  if (typeof GM_registerMenuCommand === 'function') {
+    GM_registerMenuCommand('功能', () => {
+      loadPanel(widgetsPanelPopup.value)
+      widgetsOpened.value = true
+      settingsOpened.value = false
+    })
+    GM_registerMenuCommand('设置', () => {
+      loadPanel(settingsPanelPopup.value)
+      widgetsOpened.value = false
+      settingsOpened.value = true
+    })
+  }
   window.addEventListener('blur', handleWindowBlur)
 })
 onBeforeUnmount(() => window.removeEventListener('blur', handleWindowBlur))
