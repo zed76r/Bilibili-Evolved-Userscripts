@@ -6,11 +6,12 @@
 
 - 修复启动时 lodash 全局属性不可重新配置的问题。
 - 将 Userscripts 的异步存储适配到现有配置接口；缺少油猴菜单 API 时保留页面内设置入口。
-- 修复 Safari 下组件沙箱调用 `btoa` / `atob` 的接收者错误。
+- 统一修复组件沙箱中 Window 方法（如 `btoa` / `atob`、`getComputedStyle`、定时器）的调用接收者，并补齐既有 GM 网络 API 别名。
+- 通过受限页面通道提供实时 `aid/cid/bvid`、基础播放器方法与播放/暂停事件；GM 权限保留在隔离环境。
 - 修复 Userscripts 视频页的 `utils.playerReady 失败`：通过 BPX 控件和媒体 DOM 判断挂载，不依赖不可访问的页面登录回调。
 - 已在 B 站桌面首页验证：设置面板打开、配置刷新后保留、在线组件安装，以及“隐藏顶部横幅”样式生效。
 
-**兼容限制：** Userscripts 的隔离环境不能直接访问 B 站页面内部的 `player`、`cid` 等 JavaScript 对象，因此依赖它们的播放器增强、下载等组件不在当前支持范围内。尚未验证 iOS Safari，也不保证所有组件可用。
+**兼容范围：** 已在 Safari 桌面视频页验证视频识别、`hasVideo`、时间读取/跳转、播放/暂停事件、合集切换通知和跨域请求。页面通道只支持白名单 API，不提供任意页面对象或 `fetch/history` hook；完整下载流程、番剧、直播和 iOS Safari 尚未验证。页面 CSP 阻止通道时保留 DOM 功能。详见 [兼容说明](USERSCRIPTS.md)。
 
 ## 安装
 
