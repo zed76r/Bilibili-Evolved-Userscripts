@@ -28,7 +28,7 @@
 pnpm install --frozen-lockfile
 pnpm run type
 pnpm run lint-check
-node --import tsx --test dev-tools/userscripts/compatibility.test.mjs
+node --import tsx --test dev-tools/userscripts/*.test.mjs
 pnpm tsx dev-tools/dev-server/index.ts
 ```
 
@@ -53,6 +53,17 @@ pnpm tsx dev-tools/dev-server/command.ts shutdown
 - Safari 中设置入口显示，面板能够打开。
 - 将面板从左侧改为右侧，刷新后仍为右侧；验证后恢复左侧。
 - 在线仓库加载成功，官方“隐藏顶部横幅”组件安装并持久化；刷新后横幅实际隐藏。
-- 未测试视频/番剧/直播页面及播放器内部对象相关功能；这些不属于当前兼容承诺。
+- 首轮未测试视频/番剧/直播页面及播放器内部对象相关功能；后续视频页验证见下节，仍不承诺播放器内部 API 兼容。
 
 验证组件已停用并刷新回读，顶部横幅恢复；开发服务已关闭。
+
+### 视频页准备状态修复
+
+Userscripts 中 `playerReady()` 使用 BPX 容器内的控件与媒体 DOM 判断挂载完成，
+不再等待 content world 无法访问的 `UserStatus` / `onLoginInfoLoaded`。
+这只解决 DOM 增强的启动等待，不提供页面播放器 API 或登录状态。
+其他脚本管理器保持原有回调路径，嵌入播放器仍不初始化这些增强。
+
+本机 Safari 桌面视频页已验证：视频正常播放，超过原轮询超时后没有再出现
+`utils.playerReady 失败`。新增测试覆盖 DOM 就绪、未就绪、bwp-video 选择器、
+Tampermonkey 回调与嵌入播放器分支；与原测试合计 11 项通过。
