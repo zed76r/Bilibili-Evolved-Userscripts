@@ -29,10 +29,11 @@
 Userscripts 测试、production Userscripts 构建和 release gate；任一步骤失败都不会部署。
 
 验证构建通过后，工作流以通过验证的源码 SHA 创建唯一的 `userscripts-<UTC version>` tag，先创建 draft
-Release 并上传以下两个资产，再发布为非 prerelease 并标记为 latest：
+Release 并上传以下三个资产，再发布为非 prerelease 并标记为 latest：
 
 - `bilibili-evolved.user.js`
 - `bilibili-evolved.meta.js`
+- `custom-navbar-safari-autofill.js`：自定义顶栏的 Safari 搜索框修正插件
 
 历史 Release 保留，用于需要时手动回退到旧版本。
 
@@ -43,6 +44,8 @@ pnpm run type
 pnpm run lint-check
 node --import tsx --test dev-tools/userscripts/*.test.mjs
 pnpm run build-userscripts
+pnpm exec webpack --config ./registry/webpack/custom-navbar-safari-autofill.ts --bail
+cp registry/dist/plugins/style/custom-navbar-safari-autofill.js dev-tools/userscripts/dist/custom-navbar-safari-autofill.js
 node dev-tools/userscripts/check-release.mjs
 ```
 
@@ -51,10 +54,16 @@ node dev-tools/userscripts/check-release.mjs
 - `bilibili-evolved.user.js`：完整安装脚本
 - `bilibili-evolved.meta.js`：更新 metadata
 
+单独构建的插件复制到同一发布目录后，由 release gate 一并验证。
+
 发布后固定使用以下地址：
 
 - `https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.user.js`
 - `https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.meta.js`
+- `https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/custom-navbar-safari-autofill.js`
+
+插件发布后，在 Bilibili Evolved 设置面板的「插件」页粘贴第三个地址并添加，刷新页面生效。
+默认在线仓库仍使用上游地址；只有这个手动安装的插件使用本 fork 的 Release 地址。
 
 metadata 的 `name` 为 `Bilibili Evolved (Userscripts Preview)`，与当前安装保持一致。发布脚本的 `@version`
 采用 UTC 构建时间，格式为 `YYYYMMDD.HHMMSS`；内部核心兼容版本仍以上游版本为准。Userscripts 支持通过 metadata
@@ -77,6 +86,8 @@ pnpm run type
 pnpm run lint-check
 node --import tsx --test dev-tools/userscripts/*.test.mjs
 pnpm run build-userscripts
+pnpm exec webpack --config ./registry/webpack/custom-navbar-safari-autofill.ts --bail
+cp registry/dist/plugins/style/custom-navbar-safari-autofill.js dev-tools/userscripts/dist/custom-navbar-safari-autofill.js
 node dev-tools/userscripts/check-release.mjs
 ```
 
