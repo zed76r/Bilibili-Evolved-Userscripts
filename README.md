@@ -21,6 +21,9 @@
 
 - [安装脚本](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.user.js)：`bilibili-evolved.user.js`
 - [更新 metadata](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.meta.js)：`bilibili-evolved.meta.js`
+- [自定义顶栏 - Safari 密码填充修正（插件）](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/custom-navbar-safari-autofill.js)：`custom-navbar-safari-autofill.js`
+
+使用上游「自定义顶栏」组件时，在 Bilibili Evolved 设置面板的「插件」页粘贴上述插件链接并添加，刷新页面生效。它不在上游「在线」列表；其他在线组件和插件仍从上游获取。
 
 `main` 的发布工作流成功后，上述固定链接指向最新制品；历史版本可在 [Releases](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases) 中下载。
 
