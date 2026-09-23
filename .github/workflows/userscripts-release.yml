@@ -31,6 +31,8 @@ jobs:
       - run: pnpm run lint-check
       - run: node --import tsx --test dev-tools/userscripts/*.test.mjs
       - run: pnpm run build-userscripts
+      - run: pnpm exec webpack --config ./registry/webpack/custom-navbar-safari-autofill.ts --bail
+      - run: cp registry/dist/plugins/style/custom-navbar-safari-autofill.js dev-tools/userscripts/dist/custom-navbar-safari-autofill.js
       - run: node dev-tools/userscripts/check-release.mjs
       - uses: actions/upload-artifact@v4
         with:
@@ -77,9 +79,9 @@ jobs:
             gh release create "$tag" --target "$GITHUB_SHA" --draft \
               --title "Userscripts $version" --notes-file release-notes.md
           fi
-          gh release upload "$tag" release/bilibili-evolved.user.js release/bilibili-evolved.meta.js --clobber
+          gh release upload "$tag" release/bilibili-evolved.user.js release/bilibili-evolved.meta.js release/custom-navbar-safari-autofill.js --clobber
           gh release view "$tag" --json assets --jq '[.assets[].name] | sort' > release-assets.json
-          jq -e '. == ["bilibili-evolved.meta.js", "bilibili-evolved.user.js"]' release-assets.json
+          jq -e '. == ["bilibili-evolved.meta.js", "bilibili-evolved.user.js", "custom-navbar-safari-autofill.js"]' release-assets.json
           # Recheck after upload before making this version public and updating latest.
           current_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
           test "$current_sha" = "$GITHUB_SHA"
