@@ -17,6 +17,8 @@ export const installPageEndpoint = (channelId: string) => {
     'setLightOff',
     'getPlaybackRate',
     'setPlaybackRate',
+    'getHandoff',
+    'setHandoff',
   ])
   const subscriptions = new Map<string, { player: any; type: string; callback: () => void }>()
   const player = () => page.player || page.playerRaw
@@ -67,12 +69,31 @@ export const installPageEndpoint = (channelId: string) => {
         ) {
           throw new Error('Invalid player arguments')
         }
+        if (
+          name === 'setHandoff' &&
+          (args.length !== 1 ||
+            ![page.nano?.HandoffKind?.Auto, page.nano?.HandoffKind?.Abort].includes(args[0]))
+        ) {
+          throw new Error('Invalid handoff kind')
+        }
         value = current[name](...args)
+        if (name === 'getHandoff' && typeof value !== 'number' && typeof value !== 'string') {
+          throw new Error('Invalid handoff kind')
+        }
         // Native play() may return a Promise. Do not serialize player objects.
         if (value && typeof (value as Promise<unknown>).then === 'function') {
           ;(value as Promise<unknown>).catch(() => undefined)
           value = undefined
         }
+        if (name === 'setHandoff') {
+          value = undefined
+        }
+      } else if (op === 'handoff-kind' && ['Auto', 'Abort'].includes(name)) {
+        const kind = page.nano?.HandoffKind?.[name]
+        if (typeof kind !== 'number' && typeof kind !== 'string') {
+          throw new Error('Handoff kind unavailable')
+        }
+        value = kind
       } else if (op === 'subscribe' && ['play', 'pause'].includes(name) && current) {
         const type = page.nano?.EventType?.[name === 'play' ? 'Player_Play' : 'Player_Pause']
         if (!type || typeof current.on !== 'function' || typeof current.off !== 'function') {
@@ -162,6 +183,7 @@ export const createUserscriptsPageBridge = (doc: Document = document) => {
       callback()
     })
   }
+  const handoffKind = (name: 'Auto' | 'Abort') => request({ op: 'handoff-kind', name })
   const eventMethods = {
     on,
     off,
@@ -182,7 +204,17 @@ export const createUserscriptsPageBridge = (doc: Document = document) => {
     getState: () =>
       request({ op: 'state' }) as { aid?: string; cid?: string; bvid?: string; player: boolean },
     player: nativePlayer,
-    nano: { EventType: { Player_Play: 'play', Player_Pause: 'pause' } },
+    nano: {
+      EventType: { Player_Play: 'play', Player_Pause: 'pause' },
+      HandoffKind: {
+        get Auto() {
+          return handoffKind('Auto')
+        },
+        get Abort() {
+          return handoffKind('Abort')
+        },
+      },
+    },
   }
 }
 
