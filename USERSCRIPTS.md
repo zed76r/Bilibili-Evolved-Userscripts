@@ -1,7 +1,7 @@
 # Safari Userscripts 适配（实验性）
 
 本 fork 针对 **Safari + Userscripts** 的隔离内容环境，基于
-上游 `master`（本次基线 `9535fa6`），不代表上游承诺支持 Safari，也不提供完整 Tampermonkey 兼容层。
+上游 `master`（首次适配验证基线 `9535fa6`），不代表上游承诺支持 Safari，也不提供完整 Tampermonkey 兼容层。
 
 ## 已处理
 
@@ -149,7 +149,7 @@ Tampermonkey 回调与嵌入播放器分支；与原测试合计 11 项通过。
 | `GM_info` / `GM_xmlhttpRequest` | 将已经授权给核心和组件的接口补齐为隔离环境全局别名 |
 | `aid/cid/bvid` | 实时读取公共 ID，统一字符串；过滤临时数组值 |
 | `hasVideo` / `videoChange` | 复用现有核心逻辑，支持首次识别与切集通知 |
-| `player` / `playerRaw` | 白名单：时间、音量、静音读取、跳转、播放/暂停、关灯、倍速；仅代理页面实际存在的方法 |
+| `player` / `playerRaw` | 白名单：时间、音量、静音读取、跳转、播放/暂停、关灯、倍速、连播交接；仅代理页面实际存在的方法 |
 | `on/once/off` | 播放/暂停事件；支持移除和播放器实例更换后的迁移 |
 | Window 方法 | 沙箱统一绑定原始 Window 接收者，保留构造函数语义 |
 | GM 菜单 | 管理器不提供时仍使用页面内设置入口 |
@@ -169,3 +169,18 @@ Tampermonkey 回调与嵌入播放器分支；与原测试合计 11 项通过。
 类型检查、lint 与 18 项回归测试通过；Safari 在三小时纯音乐视频页实测通过
 视频 ID、`hasVideo`、时间/音量读取、原位跳转、播放/暂停事件、跨域公开 JSON 请求和设置面板打开。
 测试探针已移除，本机安装开发构建；该次迁移验证未发布自动更新产物。
+
+
+### 上游 master 跟进候选（2026-09-27）
+
+在本地隔离分支上，以 `fa06dcec0` 为基线顺序重放 8 个 fork 专有提交，未遇到 Git 冲突。
+上游核心版本已升至 `2.11.4`，新增的连播交接逻辑依赖播放器的 `getHandoff` / `setHandoff` 和
+`nano.HandoffKind`；Userscripts 页面通道已将这些接口限制在固定白名单中，并新增回归测试。
+
+`pnpm install --frozen-lockfile`、类型检查、lint、19 项 Userscripts 测试、Userscripts 安装脚本和
+Safari 顶栏插件构建，以及发布制品检查均通过。Safari 桌面视频页在静音状态下确认候选脚本源码
+包含新桥接逻辑、设置界面已注入；页面的 `getHandoff` / `setHandoff` 与 `nano.HandoffKind`
+均可用，连播状态切换后已恢复原值。尚未在 Safari 跨隔离环境执行连播组件或关灯联动，
+因此页面 API 的成功不等于桥接调用完成实机验收。控制台观察到 `COLS iframe not found`
+异常，尚未判定是否与本次迁移有关。测试后本机 Userscripts 文件已逐字恢复原版，候选未合并、
+推送或发布。

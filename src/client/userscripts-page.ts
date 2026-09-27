@@ -17,6 +17,8 @@ export const installPageEndpoint = (channelId: string) => {
     'setLightOff',
     'getPlaybackRate',
     'setPlaybackRate',
+    'getHandoff',
+    'setHandoff',
   ])
   const subscriptions = new Map<string, { player: any; type: string; callback: () => void }>()
   const player = () => page.player || page.playerRaw
@@ -67,11 +69,29 @@ export const installPageEndpoint = (channelId: string) => {
         ) {
           throw new Error('Invalid player arguments')
         }
+        if (
+          name === 'setHandoff' &&
+          (args.length !== 1 ||
+            ![page.nano?.HandoffKind?.Auto, page.nano?.HandoffKind?.Abort].includes(args[0]))
+        ) {
+          throw new Error('Invalid handoff kind')
+        }
         value = current[name](...args)
+        if (name === 'getHandoff' && typeof value !== 'number' && typeof value !== 'string') {
+          throw new Error('Invalid handoff kind')
+        }
         // Native play() may return a Promise. Do not serialize player objects.
         if (value && typeof (value as Promise<unknown>).then === 'function') {
           ;(value as Promise<unknown>).catch(() => undefined)
           value = undefined
+        }
+        if (name === 'setHandoff') {
+          value = undefined
+        }
+      } else if (op === 'handoff-kind') {
+        const { Auto, Abort } = page.nano?.HandoffKind ?? {}
+        if ([Auto, Abort].every(kind => typeof kind === 'number' || typeof kind === 'string')) {
+          value = { Auto, Abort }
         }
       } else if (op === 'subscribe' && ['play', 'pause'].includes(name) && current) {
         const type = page.nano?.EventType?.[name === 'play' ? 'Player_Play' : 'Player_Pause']
@@ -182,7 +202,14 @@ export const createUserscriptsPageBridge = (doc: Document = document) => {
     getState: () =>
       request({ op: 'state' }) as { aid?: string; cid?: string; bvid?: string; player: boolean },
     player: nativePlayer,
-    nano: { EventType: { Player_Play: 'play', Player_Pause: 'pause' } },
+    nano: {
+      EventType: { Player_Play: 'play', Player_Pause: 'pause' },
+      get HandoffKind() {
+        return request({ op: 'handoff-kind' }) as
+          | Record<'Auto' | 'Abort', string | number>
+          | undefined
+      },
+    },
   }
 }
 
