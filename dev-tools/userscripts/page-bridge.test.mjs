@@ -67,6 +67,41 @@ test('does not expose arbitrary page properties, code evaluation or GM APIs', ()
   assert.throws(() => bridge.player.seek({ arbitrary: 'object' }), /API/)
 })
 
+test('handoff bridge exposes only supported methods and kinds when the page loads them', () => {
+  const { bridge, page } = setup()
+  page.nano.HandoffKind = { Auto: 1, Abort: 0, Secret: 2 }
+  let currentKind = 0
+  page.player.getHandoff = () => currentKind
+  page.player.setHandoff = kind => {
+    currentKind = kind
+  }
+  assert.equal(bridge.nano.HandoffKind.Auto, 1)
+  assert.equal(bridge.nano.HandoffKind.Abort, 0)
+  assert.equal(bridge.nano.HandoffKind.Secret, undefined)
+  assert.equal(bridge.player.getHandoff(), 0)
+  bridge.player.setHandoff(bridge.nano.HandoffKind.Auto)
+  assert.equal(bridge.player.getHandoff(), 1)
+  page.player.setHandoff = kind => {
+    currentKind = kind
+    return { secret: 'not-public' }
+  }
+  assert.equal(bridge.player.setHandoff(bridge.nano.HandoffKind.Abort), undefined)
+  assert.equal(bridge.player.getHandoff(), 0)
+  page.player.setHandoff = kind => {
+    currentKind = kind
+    const result = {}
+    result.self = result
+    return result
+  }
+  assert.equal(bridge.player.setHandoff(bridge.nano.HandoffKind.Auto), undefined)
+  assert.equal(bridge.player.getHandoff(), 1)
+  assert.throws(() => bridge.player.setHandoff(2), /API/)
+  page.player.getHandoff = () => ({ secret: 'not-public' })
+  assert.throws(() => bridge.player.getHandoff(), /API/)
+  page.nano.HandoffKind = undefined
+  assert.throws(() => bridge.nano.HandoffKind.Auto, /API/)
+})
+
 test('play subscriptions support once and removal without duplicate callbacks', () => {
   const { bridge, handlers } = setup()
   let count = 0
