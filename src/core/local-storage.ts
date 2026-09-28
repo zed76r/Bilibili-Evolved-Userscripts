@@ -51,22 +51,28 @@ window.addEventListener('message', e => {
   }
 })
 
-const wrapMessageApi = <ReturnType = void>(handler: (messageId: string) => void) => {
+const wrapMessageApi = <ReturnType = void>(handler: (messageId: string) => Promise<void>) => {
   return () =>
-    new Promise<ReturnType>(resolve => {
+    new Promise<ReturnType>((resolve, reject) => {
       const id = getRandomId(32)
       messageListeners.push({
         id,
         resolve,
       })
-      handler(id)
+      handler(id).catch(error => {
+        const listenerIndex = messageListeners.findIndex(it => it.id === id)
+        if (listenerIndex !== -1) {
+          messageListeners.splice(listenerIndex, 1)
+        }
+        reject(error)
+      })
     })
 }
 /** 跨域 Local Storage (由 b 站官方提供) */
 export const crossOriginLocalStorage = {
   setItem: (key: string, item: unknown) => {
     return wrapMessageApi(id => {
-      postMessage({
+      return postMessage({
         id,
         type: 'COLS_SET',
         key,
@@ -76,7 +82,7 @@ export const crossOriginLocalStorage = {
   },
   getItem: <ReturnType = string>(key: string) => {
     return wrapMessageApi<ReturnType>(id => {
-      postMessage({
+      return postMessage({
         id,
         type: 'COLS_GET',
         key,
@@ -85,7 +91,7 @@ export const crossOriginLocalStorage = {
   },
   removeItem: (key: string) => {
     return wrapMessageApi(id => {
-      postMessage({
+      return postMessage({
         id,
         type: 'COLS_RM',
         key,
@@ -94,7 +100,7 @@ export const crossOriginLocalStorage = {
   },
   keys: (prefix: string) => {
     return wrapMessageApi<string[]>(id => {
-      postMessage({
+      return postMessage({
         id,
         type: 'COLS_KEYS',
         key: prefix,
@@ -103,7 +109,7 @@ export const crossOriginLocalStorage = {
   },
   clear: (prefix: string) => {
     return wrapMessageApi(id => {
-      postMessage({
+      return postMessage({
         id,
         type: 'COLS_CLR',
         key: prefix,

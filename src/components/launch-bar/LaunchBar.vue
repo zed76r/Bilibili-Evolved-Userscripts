@@ -165,28 +165,35 @@ const generateKeys = (
 
 const getOnlineActionsInternal = async () => {
   const currentQuery = query.value
-  const onlineActions = (
-    await Promise.all(
-      actionProviders.map(async provider =>
-        generateKeys(provider, await provider.getActions(currentQuery)),
-      ),
-    )
-  ).flat()
-  if (currentQuery !== query.value || isHistory.value) {
-    return
+  const providerActions: LaunchBarActionEntry[][] = actionProviders.map(() => [])
+  let pendingProviders = actionProviders.length
+  if (pendingProviders === 0) {
+    noOnlineActions.value = true
   }
-  const fuse = new Fuse(onlineActions, {
-    keys: ['indexer', 'displayName', 'name', 'description', 'key'],
-    includeScore: true,
-    threshold: 0.1,
-  })
-  const fuseResult = fuse.search(currentQuery)
-  console.log(fuseResult)
-  actions.value = sortActions(fuseResult.map(it => it.item).slice(0, 13))
-  if (activeActionIndex.value === -1) {
-    resetFocus()
-  }
-  noOnlineActions.value = actions.value.length === 0
+  await Promise.all(
+    actionProviders.map(async (provider, index) => {
+      try {
+        providerActions[index] = generateKeys(provider, await provider.getActions(currentQuery))
+      } catch (error) {
+        console.error('Failed to get LaunchBar actions:', provider.name, error)
+      }
+      pendingProviders--
+      if (currentQuery !== query.value || isHistory.value) {
+        return
+      }
+      const fuse = new Fuse(providerActions.flat(), {
+        keys: ['indexer', 'displayName', 'name', 'description', 'key'],
+        includeScore: true,
+        threshold: 0.1,
+      })
+      const fuseResult = fuse.search(currentQuery)
+      actions.value = sortActions(fuseResult.map(it => it.item).slice(0, 13))
+      if (activeActionIndex.value === -1) {
+        resetFocus()
+      }
+      noOnlineActions.value = pendingProviders === 0 && actions.value.length === 0
+    }),
+  )
 }
 
 const getOnlineActions = lodash.debounce(getOnlineActionsInternal, 200)
@@ -194,9 +201,17 @@ const getOnlineActions = lodash.debounce(getOnlineActionsInternal, 200)
 const getActions = async () => {
   noOnlineActions.value = false
   if (isHistory.value) {
-    actions.value = sortActions(
-      generateKeys(historyProvider, await historyProvider.getActions(query.value)),
-    )
+    try {
+      const historyActions = await historyProvider.getActions(query.value)
+      if (isHistory.value) {
+        actions.value = sortActions(generateKeys(historyProvider, historyActions))
+      }
+    } catch (error) {
+      console.error('Failed to get LaunchBar history:', error)
+      if (isHistory.value) {
+        actions.value = []
+      }
+    }
     return
   }
   const actionsArray: LaunchBarActionEntry[] = []
