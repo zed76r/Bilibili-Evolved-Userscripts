@@ -149,7 +149,7 @@ Tampermonkey 回调与嵌入播放器分支；与原测试合计 11 项通过。
 | `GM_info` / `GM_xmlhttpRequest` | 将已经授权给核心和组件的接口补齐为隔离环境全局别名 |
 | `aid/cid/bvid` | 实时读取公共 ID，统一字符串；过滤临时数组值 |
 | `hasVideo` / `videoChange` | 复用现有核心逻辑，支持首次识别与切集通知 |
-| `player` / `playerRaw` | 白名单：时间、音量、静音读取、跳转、播放/暂停、关灯、倍速、连播交接；仅代理页面实际存在的方法 |
+| `player` / `playerRaw` | 白名单：时间、音量、静音读取、跳转、播放/暂停、关灯、倍速、连播交接、上一/下一分 P；仅代理页面实际存在的方法 |
 | `on/once/off` | 播放/暂停事件；支持移除和播放器实例更换后的迁移 |
 | Window 方法 | 沙箱统一绑定原始 Window 接收者，保留构造函数语义 |
 | GM 菜单 | 管理器不提供时仍使用页面内设置入口 |
@@ -184,3 +184,29 @@ Safari 顶栏插件构建，以及发布制品检查均通过。Safari 桌面视
 因此页面 API 的成功不等于桥接调用完成实机验收。控制台观察到 `COLS iframe not found`
 异常，尚未判定是否与本次迁移有关。测试后本机 Userscripts 文件已逐字恢复原版，候选未合并、
 推送或发布。
+
+
+### 上游 master 跟进候选（2026-10-26）
+
+候选基于上游 `master` 的 `12319cb19`（核心版本 `2.11.5`），保留现有 Userscripts 适配、
+Safari 顶栏插件与搜索历史存储失败修复。上游 README 与已有快照一致。
+
+新增上一/下一分 P 的受限桥接：`getManifest()` 只返回 `hasPrev` / `hasNext` 两个严格布尔值，
+`prev()` / `next()` 不向隔离环境传出播放器的返回对象，三个方法均不接受参数。
+原始 manifest 的其他字段和任意播放器对象仍不开放。Userscripts 的公共视频 ID 由页面桥接实时读取，
+因此跳过依赖完整 manifest 的旧版 v4 ID 补丁，避免播放器延迟挂载时读取缺失字段。
+
+本节记录发布前的候选验证，不代表已安装到 Safari。播放器分 P 切换和弹幕三态、字幕偏好等
+上游变更仍需在 Safari + Userscripts 的实际页面中验证；既有实机记录的日期与范围不变。
+
+
+2026-10-26 Safari 页面 API 检查：桌面视频页 `BV1xx411c7mD` 的媒体已挂载，原生播放器提供
+`getManifest` / `prev` / `next`；候选桥接成功创建，仅返回两个值为 `false` 的分 P 标记。
+该页无可切换分 P，且这次探针在页面环境执行，未替换已安装的 Userscripts 脚本，
+因此不能作为跨隔离环境或实际分 P 切换的验收。检查后已关闭任务标签页。
+
+
+候选验证通过：`pnpm run type`、`pnpm run lint-check`、30 项 Userscripts 回归、开发本体 watcher、
+快捷键和自定义弹幕切换组件单独编译、production Userscripts 构建、Safari 顶栏插件构建及 release gate。
+开发服务已通过 `shutdown` 关闭。以上为发布前的本地验证记录；发布状态以 GitHub Actions 与 Release 为准，
+发布成功仍不代表已安装到 Safari 或通过实际分 P 切换验收。
