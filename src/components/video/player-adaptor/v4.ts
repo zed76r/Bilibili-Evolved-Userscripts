@@ -46,7 +46,8 @@ const idPolyfill = async () => {
 }
 
 export const v4PlayerPolyfill = lodash.once(() => {
-  if (unsafeWindow.aid || unsafeWindow.cid) {
+  // Userscripts already reads live IDs through its restricted page bridge.
+  if (GM_info.scriptHandler === 'Userscripts' || unsafeWindow.aid || unsafeWindow.cid) {
     return
   }
   idPolyfill()

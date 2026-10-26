@@ -31,6 +31,7 @@
 | `getHandoff` / `setHandoff` / `nano.HandoffKind` | 页面 API 已实测（2026-09-27）；隔离桥接待实测 | Safari 视频页确认枚举为数字，页面 API 切换连播状态后已恢复；桥接白名单由自动化测试覆盖，尚未在 Safari 跨隔离环境执行连播组件 | [验证记录](USERSCRIPTS.md#上游-master-跟进候选2026-09-27) · [实现](src/client/userscripts-page.ts) · [测试](dev-tools/userscripts/page-bridge.test.mjs) |
 | 播放 / 暂停事件，`on` / `once` / `off` | 部分实测（2026-09-15） | 播放 / 暂停事件已实测；`once` / `off` 与播放器切换由自动化测试覆盖 | [验证记录](USERSCRIPTS.md#核心-api-统一适配) · [测试](dev-tools/userscripts/page-bridge.test.mjs) |
 | 音量读取；时长、静音、音量设置、关灯、倍速等播放器方法 | 部分实测（2026-09-15） | 音量读取已实测；其余方法在白名单内，仅当页面播放器提供该方法时可调用，尚未逐项实机验收 | [验证记录](USERSCRIPTS.md#master-基线迁移验证2026-09-15) · [白名单实现](src/client/userscripts-page.ts) |
+| `getManifest` / `prev` / `next` | 自动化验证；Safari 待实测 | manifest 仅返回 `hasPrev` / `hasNext` 两个布尔值；上一/下一分 P 不传出播放器返回对象 | [实现](src/client/userscripts-page.ts) · [测试](dev-tools/userscripts/page-bridge.test.mjs) |
 | 任意页面对象、`fetch/history` hook、完整播放器内部 API | 不支持 | `unsafeWindow` 仅指向隔离环境的 Window；页面通道只开放固定白名单 | [兼容边界](USERSCRIPTS.md#兼容边界) · [白名单测试](dev-tools/userscripts/page-bridge.test.mjs) |
 
 完整下载流程、番剧、直播、iOS Safari 和第三方组件仍需分别验证，见 [兼容说明](USERSCRIPTS.md)。
@@ -63,7 +64,7 @@ Userscripts 可以通过 metadata 检查更新，但不承诺管理器后台自�
 
 ## 上游文档跟踪
 
-[上游 README 原文](README.upstream.md) 单独保存在仓库根目录，已核对到 `the1812/Bilibili-Evolved` 的 `master` 提交 `fa06dcec0`（README 内容未变化）。文件保持原文，原有相对图片和文档链接仍从根目录解析；其安装链接与兼容性声明适用于上游版本。以后更新时，先查看差异，再同步文件：
+[上游 README 原文](README.upstream.md) 单独保存在仓库根目录，已核对到 `the1812/Bilibili-Evolved` 的 `master` 提交 `12319cb19`（README 内容未变化）。文件保持原文，原有相对图片和文档链接仍从根目录解析；其安装链接与兼容性声明适用于上游版本。以后更新时，先查看差异，再同步文件：
 
 ```sh
 git fetch upstream master

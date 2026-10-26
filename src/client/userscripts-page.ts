@@ -17,6 +17,9 @@ export const installPageEndpoint = (channelId: string) => {
     'setLightOff',
     'getPlaybackRate',
     'setPlaybackRate',
+    'getManifest',
+    'prev',
+    'next',
     'getHandoff',
     'setHandoff',
   ])
@@ -69,6 +72,9 @@ export const installPageEndpoint = (channelId: string) => {
         ) {
           throw new Error('Invalid player arguments')
         }
+        if (['getManifest', 'prev', 'next'].includes(name) && args.length !== 0) {
+          throw new Error('Invalid player arguments')
+        }
         if (
           name === 'setHandoff' &&
           (args.length !== 1 ||
@@ -85,7 +91,14 @@ export const installPageEndpoint = (channelId: string) => {
           ;(value as Promise<unknown>).catch(() => undefined)
           value = undefined
         }
-        if (name === 'setHandoff') {
+        if (name === 'getManifest') {
+          const manifest = value as { hasPrev?: unknown; hasNext?: unknown } | null | undefined
+          value = {
+            hasPrev: manifest?.hasPrev === true,
+            hasNext: manifest?.hasNext === true,
+          }
+        }
+        if (['setHandoff', 'prev', 'next'].includes(name)) {
           value = undefined
         }
       } else if (op === 'handoff-kind' && ['Auto', 'Abort'].includes(name)) {
