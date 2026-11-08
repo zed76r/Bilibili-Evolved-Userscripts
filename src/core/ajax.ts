@@ -175,6 +175,7 @@ export const monkey = <T = any>(details: MonkeyXhrBasicDetails) =>
     if (!('method' in fullDetails)) {
       fullDetails.method = 'GET'
     }
+    fullDetails.ontimeout = fullDetails.onerror
     GM_xmlhttpRequest(fullDetails)
   })
 /**
