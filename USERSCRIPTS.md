@@ -210,3 +210,22 @@ Safari 顶栏插件与搜索历史存储失败修复。上游 README 与已有�
 快捷键和自定义弹幕切换组件单独编译、production Userscripts 构建、Safari 顶栏插件构建及 release gate。
 开发服务已通过 `shutdown` 关闭。以上为发布前的本地验证记录；发布状态以 GitHub Actions 与 Release 为准，
 发布成功仍不代表已安装到 Safari 或通过实际分 P 切换验收。
+
+
+### 上游 master 跟进候选（2026-11-08）
+
+候选基于上游 `master` 的 `bcfd11fc0`，较前次基线 `12319cb19` 新增 25 个提交，
+核心版本仍为 `2.11.5`。现有 Userscripts 适配与 Safari 顶栏插件无冲突应用，
+播放器桥接接口保持一致；上游 README 与已有快照一致。
+
+本次包含夜间模式设置合并及旧设置迁移、快捷键跳过已不存在的动作、滚轮音量避开控制栏和浮层、
+大会员权益期限显示修复、直播首页共享隐藏样式，以及 Motrix 2 链接协议适配。
+原夜间模式的 `跟随系统` / `计划时段` 独立组件移入 deprecated，由主组件的 `模式` 选项接替；
+多分段 Motrix 下载改为复制链接到剪贴板，供新建任务读取。
+
+本地验证通过：类型检查、lint、30 项 Userscripts 回归、本体开发 watcher，
+以及直播首页静音/暂停、自定义顶栏、夜间模式、快捷键、滚轮音量、Motrix 和 Safari 顶栏插件的定向编译。
+依赖清单和 lockfile 未变化，复用主工作区的已安装依赖，以本机 pnpm 9.15.3 执行检查。
+发布前追加验证通过：production Userscripts 构建、Safari 顶栏插件 production 构建及 release gate。
+开发服务已通过 `shutdown` 关闭。未执行 Safari 安装与页面实测，既有实机验证记录保持原日期与范围。
+本节为发布前本地验证记录，提交与发布状态以 Git 历史、GitHub Actions 及 Release 为准。

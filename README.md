@@ -64,7 +64,7 @@ Userscripts 可以通过 metadata 检查更新，但不承诺管理器后台自�
 
 ## 上游文档跟踪
 
-[上游 README 原文](README.upstream.md) 单独保存在仓库根目录，已核对到 `the1812/Bilibili-Evolved` 的 `master` 提交 `12319cb19`（README 内容未变化）。文件保持原文，原有相对图片和文档链接仍从根目录解析；其安装链接与兼容性声明适用于上游版本。以后更新时，先查看差异，再同步文件：
+[上游 README 原文](README.upstream.md) 单独保存在仓库根目录，已核对到 `the1812/Bilibili-Evolved` 的 `master` 提交 `bcfd11fc0`（README 内容未变化）。文件保持原文，原有相对图片和文档链接仍从根目录解析；其安装链接与兼容性声明适用于上游版本。以后更新时，先查看差异，再同步文件：
 
 ```sh
 git fetch upstream master
