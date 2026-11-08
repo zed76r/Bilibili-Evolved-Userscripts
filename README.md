@@ -46,7 +46,7 @@
 - [更新 metadata](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/bilibili-evolved.meta.js)：`bilibili-evolved.meta.js`
 - [自定义顶栏 - Safari 密码填充修正（插件）](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases/latest/download/custom-navbar-safari-autofill.js)：`custom-navbar-safari-autofill.js`
 
-使用上游「自定义顶栏」组件时，在 Bilibili Evolved 设置面板的「插件」页粘贴上述插件链接并添加，刷新页面生效。它不在上游「在线」列表；其他在线组件和插件仍从上游获取。
+使用上游「自定义顶栏」组件时，从 Bilibili Evolved 设置面板打开「功能库」，点击「链接添加」，粘贴上述插件链接并安装，刷新页面生效。其他在线组件和插件仍从上游获取。
 
 `main` 的发布工作流成功后，上述固定链接指向最新制品；历史版本可在 [Releases](https://github.com/zed76r/Bilibili-Evolved-Userscripts/releases) 中下载。
 
@@ -64,7 +64,7 @@ Userscripts 可以通过 metadata 检查更新，但不承诺管理器后台自�
 
 ## 上游文档跟踪
 
-[上游 README 原文](README.upstream.md) 单独保存在仓库根目录，已核对到 `the1812/Bilibili-Evolved` 的 `master` 提交 `12319cb19`（README 内容未变化）。文件保持原文，原有相对图片和文档链接仍从根目录解析；其安装链接与兼容性声明适用于上游版本。以后更新时，先查看差异，再同步文件：
+[上游 README 原文](README.upstream.md) 单独保存在仓库根目录，已同步到 `the1812/Bilibili-Evolved` 的 `master` 提交 `ad1d7e827`（核心版本 `2.12.0`）。文件保持原文，原有相对图片和文档链接仍从根目录解析；其安装链接与兼容性声明适用于上游版本。以后更新时，先查看差异，再同步文件：
 
 ```sh
 git fetch upstream master
