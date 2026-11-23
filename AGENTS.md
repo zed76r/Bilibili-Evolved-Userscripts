@@ -23,8 +23,6 @@ Follow the [feature scope and restrictions](CONTRIBUTING.md#功能范围与限�
 Common commands:
 
 ```sh
-pnpm run type
-pnpm run lint-check
 pnpm tsx dev-tools/dev-server/index.ts
 pnpm tsx dev-tools/dev-server/command.ts sessions
 pnpm tsx dev-tools/dev-server/command.ts shutdown
@@ -79,18 +77,14 @@ Choose validation based on the risk and scope of the change.
 - For core userscript changes, use the dev server's core watcher, which automatically compiles the development build.
 - For registry feature changes, run `pnpm tsx dev-tools/dev-server/command.ts build <component|plugin> <id>` while the dev server is running.
 - Run `pnpm exec tsc -p dev-tools/dev-server/tsconfig.json` for dev server TypeScript changes.
-- For browser-facing behavior, verify the changed feature in a real browser with the local userscript installed.
+- For browser-facing behavior, verify the changed feature in a real browser with the local userscript installed, check the console for new runtime errors, and test the relevant Bilibili page type, such as video, bangumi, live, feeds, space, settings panel, or the affected component area.
 - For API-shape or Bilibili-rollout-dependent changes, record what page or account state was actually self-tested.
 
-The pull request CI workflow runs the following checks and builds. Do not repeat `build-core` or the full `build-features` build as routine local validation; run them locally only when explicitly requested, reproducing a CI failure, changing shared build infrastructure, or preparing a release.
+The pull request CI workflow runs `pnpm run check-pr-files`, the type and lint checks above, and the following builds. Do not repeat `build-core` or the full `build-features` build as routine local validation; run them locally only when explicitly requested, reproducing a CI failure, changing shared build infrastructure, or preparing a release.
 
-1. `pnpm run type`
-2. `pnpm run lint-check`
-3. `pnpm run build-core`
-4. install dependencies in `registry/`
-5. `pnpm run build-features`
-
-When a change affects page behavior, also check the browser console for new runtime errors and test the relevant Bilibili page type, such as video, bangumi, live, feeds, space, settings panel, or the affected component area.
+1. `pnpm run build-core`
+2. Install dependencies in `registry/`.
+3. `pnpm run build-features`
 
 ## Branches And Commits
 
